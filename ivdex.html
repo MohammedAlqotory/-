@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>منصة التدريب على قطع الفهم - ثانوية عامة 2027</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+    }
+    .en-text {
+      font-family: 'Inter', sans-serif;
+      direction: ltr;
+      text-align: left;
+    }
+    .scrollbar-thin::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .scrollbar-thin::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-indigo-700 text-white shadow-md sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="bg-white text-indigo-700 font-extrabold w-10 h-10 rounded-xl flex items-center justify-center shadow-inner text-lg">
+          3ث
+        </div>
+        <div>
+          <h1 class="font-bold text-base sm:text-lg leading-tight">تدريب قطع الفهم والتطبيق التفاعلي</h1>
+          <p class="text-xs text-indigo-200">كتاب القطع النموذجية - مراجعة الذكاء الاصطناعي</p>
+        </div>
+      </div>
+      
+      <!-- Passage Selector Dropdown -->
+      <div class="flex items-center gap-2">
+        <label for="passageSelect" class="text-xs hidden sm:inline-block font-semibold">اختر القطعة:</label>
+        <select id="passageSelect" onchange="changePassage(this.value)" class="bg-indigo-800 text-white text-sm rounded-lg px-3 py-1.5 border border-indigo-500 focus:outline-none focus:ring-2 focus:ring-white">
+          <!-- Populated by JS -->
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-6xl mx-auto px-4 py-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
+    
+    <!-- Right/Top Column: Passage & Vocab (lg: 6 cols) -->
+    <section class="lg:col-span-6 flex flex-col gap-4">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex-1 flex flex-col">
+        <div class="flex justify-between items-center pb-3 border-b border-slate-100">
+          <span id="passageBadge" class="bg-indigo-50 text-indigo-700 text-xs font-bold px-3 py-1 rounded-full">القطعة 1</span>
+          <span class="text-xs text-slate-400 font-medium">Read carefully & answer below</span>
+        </div>
+        
+        <!-- Passage Content -->
+        <div class="mt-4 en-text text-slate-700 text-base leading-relaxed overflow-y-auto max-h-[50vh] lg:max-h-[62vh] pr-2 scrollbar-thin select-text" id="passageText">
+          <!-- Loaded via JS -->
+        </div>
+
+        <!-- Helping Vocabulary Accordion -->
+        <div class="mt-4 pt-3 border-t border-slate-100">
+          <details class="group cursor-pointer">
+            <summary class="flex justify-between items-center text-xs font-bold text-indigo-600 select-none">
+              <span>📖 جدول الكلمات المساعدة (Helping Vocabulary)</span>
+              <span class="transition group-open:rotate-180">▼</span>
+            </summary>
+            <div id="vocabContainer" class="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+              <!-- Loaded via JS -->
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- Left/Bottom Column: Questions & AI Explanations (lg: 6 cols) -->
+    <section class="lg:col-span-6 flex flex-col gap-4">
+      
+      <!-- Progress Bar -->
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-bold text-slate-600">السؤال:</span>
+          <span id="currentQDisplay" class="text-xs font-black text-indigo-600">1 من 8</span>
+        </div>
+        <div class="flex-1 mx-4 bg-slate-100 h-2.5 rounded-full overflow-hidden">
+          <div id="progressBar" class="bg-indigo-600 h-full w-0 transition-all duration-300"></div>
+        </div>
+        <div class="text-xs font-bold">
+          النتيجة: <span id="scoreDisplay" class="text-emerald-600 font-extrabold">0</span>
+        </div>
+      </div>
+
+      <!-- Question Box -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex-1 flex flex-col">
+        <div class="mb-4">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400" id="qCategory">Comprehension Question</span>
+          <h2 id="qText" class="en-text text-base sm:text-lg font-bold text-slate-900 mt-1">
+            <!-- Question text -->
+          </h2>
+        </div>
+
+        <!-- Options Container -->
+        <div id="optionsContainer" class="flex flex-col gap-2.5 en-text">
+          <!-- Options rendered via JS -->
+        </div>
+
+        <!-- AI Explanation Panel (Shown upon answering) -->
+        <div id="aiExplanation" class="mt-5 p-4 rounded-xl hidden border transition-all">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-lg">🤖</span>
+            <h4 class="text-sm font-bold" id="explanationTitle">تحليل الذكاء الاصطناعي للإجابة</h4>
+          </div>
+          <div id="explanationBody" class="text-xs leading-relaxed text-slate-700 space-y-2">
+            <!-- Rationale rendered here -->
+          </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="mt-6 pt-4 border-t border-slate-100 flex justify-between items-center">
+          <button id="prevBtn" onclick="prevQuestion()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition disabled:opacity-40 disabled:cursor-not-allowed">
+            السابق
+          </button>
+          <button id="nextBtn" onclick="nextQuestion()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow-sm transition">
+            التالي
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // Data Structure for Passages from the Book
+    const passagesData = [
+      {
+        id: 1,
+        title: "Passage 1: Role Models & Elephants",
+        text: `We have learnt from modern psychology that nobody wants to be told what to do by someone else. We resist when someone tries to make us do something. Yet, we persist in trying to change others. If we want others to change their ways, telling them to do so will have little effect unless we are living examples of that behavior.
+
+A team of researchers went to Africa to study the behavior of elephants. They came across a herd of elephants running wild, and destroying their environment. They discovered that these were all teenage male elephants. They had no adult role models to learn from. The researchers arranged to have some adult elephants brought in. In the beginning, there was no change and the teen elephants continued to run wild and fight with each other. However, after a few days the teen elephants began to settle down. Over time, they became well behaved and their wild actions subsided.
+
+On their own, the teen elephants had no role models and did not know how to behave. Once adults were introduced into their group, the teens had role models and began to be disciplined. In the same way, parents teach children through loving discipline and by setting an example. Children do not believe in words alone but in what they see parents do. They copy their good and bad habits because that is their example. That is the only way to bring about change. If we want to see positive change in others and in our family, neighborhood, community, society, or country, then we need to set a good example.`,
+        vocab: [
+          { en: "resist", ar: "يقاوم" },
+          { en: "discipline", ar: "انضباط / نظام" },
+          { en: "subside", ar: "يهدأ / يتراجع" },
+          { en: "settle down", ar: "يستقر / يهدأ" },
+          { en: "community", ar: "مجتمع" },
+          { en: "teenage", ar: "مراهق" }
+        ],
+        questions: [
+          {
+            q: "1. The best title for the passage could be:",
+            options: [
+              { key: "a", text: "How elephants live." },
+              { key: "b", text: "Be the change you want to see in others." },
+              { key: "c", text: "How to copy others' actions." },
+              { key: "d", text: "The value of helping others." }
+            ],
+            correct: "b",
+            aiAnalysis: {
+              correct: "القطعة تتحدث بشكل رئيسي عن أن الكلام والنصح لا يغير الناس، بل القدوة العملية وأن نكون نموذجاً لما نريد تغييره (Lead by example). قصة الأفيال كانت مجرد تشبيه لترسيخ هذه الفكرة الأخلاقية.",
+              distractors: {
+                a: "خطأ: قصة الأفيال ذُكرت كمثال للتوضيح فقط، وليست هي الموضوع العام للقطعة.",
+                c: "خطأ: القطعة تركز على أن نكون قدوة حسنة وليس مجرد كيفية تقليد أفعال الناس عموماً.",
+                d: "خطأ: المعنى هنا ليس مساعدة المحتاجين أو عمل الخير، بل القدوة والتأثير الإيجابي في السلوك."
+              }
+            }
+          },
+          {
+            q: "2. According to the passage, people don't like to be told:",
+            options: [
+              { key: "a", text: "how one should behave" },
+              { key: "b", text: "how to help elephants" },
+              { key: "c", text: "how to talk" },
+              { key: "d", text: "to argue" }
+            ],
+            correct: "a",
+            aiAnalysis: {
+              correct: "مذكور مباشرة في السطر الأول: 'nobody wants to be told what to do... If we want others to change their ways' أي أن الناس تنفر من إملاء الأوامر وكيفية التصرف عليهم.",
+              distractors: {
+                b: "خطأ: مساعدة الأفيال لم تكن ضمن سياق ما يُطلب من الناس فعله.",
+                c: "خطأ: النص لم يقل 'طريقة الكلام' بل 'ما يفعلونه' وسلوكهم بوجه عام.",
+                d: "خطأ: النص ذكر أن الناس بطبعها تقاوم التوجيهات المباشرة وليس الجدال بحد ذاته."
+              }
+            }
+          },
+          {
+            q: "3. The most important benefit of having a good role model for the teens is ....",
+            options: [
+              { key: "a", text: "It helps them to be disciplined" },
+              { key: "b", text: "To be successful student" },
+              { key: "c", text: "To earn respect" },
+              { key: "d", text: "To secure good position in school and colleges." }
+            ],
+            correct: "a",
+            aiAnalysis: {
+              correct: "ورد بالقطعة صراحة: 'Once adults were introduced... the teens had role models and began to be disciplined' فالقدوة تكسبهم الانضباط والتهذيب السلوكي.",
+              distractors: {
+                b: "خطأ: لم يذكر النص أي تفاصيل تتعلق بالنجاح الدراسي للطلاب.",
+                c: "خطأ: كسب الاحترام نتيجة ثانوية لكن الهدف الأساسي المباشر هو 'الانضباط' كما نصت القطعة.",
+                d: "خطأ: الحصول على مقعد أو درجات في الكليات لم يرد إطلاقاً بالقطعة."
+              }
+            }
+          },
+          {
+            q: "4. The team observed that the reason of strange behaviour of the Male elephant is that they:",
+            options: [
+              { key: "a", text: "always want to have fun" },
+              { key: "b", text: "were free to behave" },
+              { key: "c", text: "lived in the jungle" },
+              { key: "d", text: "lacked a role model." }
+            ],
+            correct: "d",
+            aiAnalysis: {
+              correct: "النص يقول بوضوح: 'They discovered that these were all teenage male elephants. They had no adult role models to learn from.'",
+              distractors: {
+                a: "خطأ: لم تكن القضية رغبة في المرح بل تخريباً وسلوكاً عدوانياً بسبب غياب الكبار.",
+                b: "خطأ: ليست الحرية بحد ذاتها السبب، بل عدم وجود كبار يتعلمون منهم حدود التصرف.",
+                c: "خطأ: العيش في الغابة موطنهم الطبيعي ولا يسبب هذا السلوك الشاذ."
+              }
+            }
+          },
+          {
+            q: "5. Teens follow their role model because:",
+            options: [
+              { key: "a", text: "Teens have lots of free time" },
+              { key: "b", text: "Modelling is a good career" },
+              { key: "c", text: "They copy the habits of their model" },
+              { key: "d", text: "Teens want to be famous" }
+            ],
+            correct: "c",
+            aiAnalysis: {
+              correct: "تذكر القطعة: 'Children do not believe in words alone but in what they see parents do. They copy their good and bad habits because that is their example.' فالطبيعة البشرية تحاكي ما تراه.",
+              distractors: {
+                a: "خطأ: وقت الفراغ ليس سبباً لاتباع القدوة.",
+                b: "خطأ: هنا خلط بين كلمة Model (قدوة) وعارض أزياء (Fashion Modelling).",
+                d: "خطأ: الرغبة في الشهرة لم تكن دافع تقليد القدوة المذكور في النص."
+              }
+            }
+          },
+          {
+            q: "6. Good role models lead by examples because:",
+            options: [
+              { key: "a", text: "No one understands examples" },
+              { key: "b", text: "They want to avoid punishment." },
+              { key: "c", text: "We all love to see action movies" },
+              { key: "d", text: "Teens understand examples easily." }
+            ],
+            correct: "d",
+            aiAnalysis: {
+              correct: "لأن الأفعال والقدوة العملية أسهل في الفهم والاستيعاب والتقليد من مجرد الكلمات والتوجيهات النظرية.",
+              distractors: {
+                a: "خطأ: عكس المعنى تماماً، فالجميع يفهم الأمثلة العملية.",
+                b: "خطأ: القدوة الحسنة لا تقود بالأمثلة هرباً من العقاب بل لتوجيه الآخرين بحب.",
+                c: "خطأ: أفلام الحركة غير ذات صلة بالموضوع إطلاقاً."
+              }
+            }
+          },
+          {
+            q: "7. The underlined word 'subsided' is closest in meaning to:",
+            options: [
+              { key: "a", text: "improve" },
+              { key: "b", text: "decrease" },
+              { key: "c", text: "develop" },
+              { key: "d", text: "repair" }
+            ],
+            correct: "b",
+            aiAnalysis: {
+              correct: "كلمة 'subside' تعني تهدأ أو تقل حدتها تدريجياً (their wild actions subsided = تصرفاتهم الهائجة تراجعت وقلت)، وأقرب مرادف لها هو decrease أو calm down.",
+              distractors: {
+                a: "خطأ: improve تعني يتحسن، وأفعالهم العنيفة لم تتحسن بل قلت وتلاشت.",
+                c: "خطأ: develop تعني يتطور أو ينمو وهو عكس سياق الهدوء.",
+                d: "خطأ: repair تعني يصلح شيئاً تالفاً."
+              }
+            }
+          },
+          {
+            q: "8. We infer from the passage that teens:",
+            options: [
+              { key: "a", text: "copy good habits only." },
+              { key: "b", text: "copy both good and bad habits." },
+              { key: "c", text: "copy bad habits only." },
+              { key: "d", text: "can behave well without role models." }
+            ],
+            correct: "b",
+            aiAnalysis: {
+              correct: "النص ينص بصيغة مباشرة وواضحة في الفقرة الأخيرة: 'They copy their good and bad habits because that is their example.' فالأبناء يمتصون كل تصرفات القدوة سواء حسنة أو سيئة.",
+              distractors: {
+                a: "خطأ: النص وضح أنهم يقلدون العادات السيئة أيضاً إذا رأوها.",
+                c: "خطأ: يقلدون الصالح أيضاً وليس السيئ فقط.",
+                d: "خطأ: تجربة الأفيال أثبتت أن غياب القدوة ينتج عنه تصرفات فوضوية ومدمرة."
+              }
+            }
+          }
+        ]
+      },
+      {
+        id: 2,
+        title: "Passage 2: A Digital Diet",
+        text: `Technology is an important part of people's lives, but the time spent with digital devices needs to be balanced with other activities. A digital diet would help people limit screen time and reverse some bad habits from too much digital use. This balance could mean more time outside, more sleep, and longer attention spans. A digital diet would be worth the effort.
+
+Young people depend on technology for almost everything, but too much technology can be bad. Everyone who uses digital devices needs to restrict the hours they spend with screens by spending more time outside or reading a book before they go to bed. Even though computers are still needed for homework, people would benefit from less screen time.
+
+Most people rely on technology to communicate with others through text and email, but too much time looking at a screen creates bad habits. Instead, everyone should try to go outside during their free time so that they can get better grades in school and develop their creativity. Although a digital diet would be hard at first, it would help people in the end.
+
+Although electronic devices can help people, they can also be bad for people's health. Digital overload should be replaced with a digital diet. Most people know that a food diet helps people get rid of poor eating habits, and the same is true with a digital diet. Going on a digital diet would prevent people from developing poor habits with their digital devices.`,
+        vocab: [
+          { en: "balance", ar: "توازن" },
+          { en: "restrict", ar: "يحد / يقلل" },
+          { en: "reverse", ar: "يعكس / يقلب" },
+          { en: "span", ar: "مدى / مدة" },
+          { en: "overload", ar: "حمل زائد" },
+          { en: "creativity", ar: "إبداع" }
+        ],
+        questions: [
+          {
+            q: "1. The best title for this passage could be:",
+            options: [
+              { key: "a", text: "New technology" },
+              { key: "b", text: "Electronic devices" },
+              { key: "c", text: "The internet" },
+              { key: "d", text: "A digital diet" }
+            ],
+            correct: "d",
+            aiAnalysis: {
+              correct: "القطعة بأكملها تدور حول مفهوم 'الحمية الرقمية' (Digital Diet) لتقليل فترات الشاشات وإعادة التوازن للحياة.",
+              distractors: {
+                a: "خطأ: النص لا يستعرض ابتكارات تكنولوجية جديدة.",
+                b: "خطأ: الأجهزة ذُكرت كعامل عام، بينما التركيز هو ترشيد استخدامها.",
+                c: "خطأ: الإنترنت مجرد جانب واحد من الشاشات الرقمية."
+              }
+            }
+          },
+          {
+            q: "2. The writer advises us to:",
+            options: [
+              { key: "a", text: "sleep early" },
+              { key: "b", text: "spend time outside" },
+              { key: "c", text: "balance our times online" },
+              { key: "d", text: "avoid looking at the screen" }
+            ],
+            correct: "c",
+            aiAnalysis: {
+              correct: "الهدف الرئيسي الذي يوصي به الكاتب هو إحداث التوازن 'needs to be balanced with other activities' بين استخدام التكنولوجيا والأنشطة الواقعية.",
+              distractors: {
+                a: "خطأ: النوم نتيجة إيجابية لتقليل الشاشات وليس النصيحة الشاملة.",
+                b: "خطأ: قضاء الوقت بالخارج وسيلة من وسائل تحقيق التوازن، لكن النصيحة المحورية هي التوازن نفسه.",
+                d: "خطأ: الكاتب لا يطلب مقاطعة الشاشات نهائياً، بل الاعتدال."
+              }
+            }
+          },
+          {
+            q: "3. Which one of the following is a useful activity?",
+            options: [
+              { key: "a", text: "Reading a book" },
+              { key: "b", text: "Surfing webpages" },
+              { key: "c", text: "Writing a comment on a post" },
+              { key: "d", text: "Chatting with friends" }
+            ],
+            correct: "a",
+            aiAnalysis: {
+              correct: "ذكر الكاتب قراءة كتاب قبل النوم كبديل صحي ومفيد للشاشات: 'or reading a book before they go to bed.'",
+              distractors: {
+                b: "خطأ: تصفح صفحات الويب يزيد من وقت الشاشة المفرط.",
+                c: "خطأ: كتابة التعليقات تتطلب بقاء العين على الشاشة.",
+                d: "خطأ: الدردشة الرقمية عبر الشاشات هي من العادات التي تسبب إرهاقاً رقمياً."
+              }
+            }
+          },
+          {
+            q: "4. Which of the following is a form of modern means of communication?",
+            options: [
+              { key: "a", text: "letters" },
+              { key: "b", text: "e-mails" },
+              { key: "c", text: "faxes" },
+              { key: "d", text: "telegrams" }
+            ],
+            correct: "b",
+            aiAnalysis: {
+              correct: "البريد الإلكتروني (e-mail) هو الوسيلة الحديثة المذكورة في القطعة مقارنة بالوسائل الورقية والتاريخية القديمة.",
+              distractors: {
+                a: "خطأ: الخطابات البريدية وسيلة تقليدية قديمة.",
+                c: "خطأ: الفاكس وسيلة اتصال كلاسيكية قديمة وغير رقمية حديثة.",
+                d: "خطأ: التلغراف وسيلة قديمة جداً توقفت تقريباً."
+              }
+            }
+          },
+          {
+            q: "5. We infer that the writer is:",
+            options: [
+              { key: "a", text: "against using technology" },
+              { key: "b", text: "for using technology" },
+              { key: "c", text: "with using technology with limits" },
+              { key: "d", text: "defending using technology" }
+            ],
+            correct: "c",
+            aiAnalysis: {
+              correct: "الكاتب يعترف بأهمية التكنولوجيا للدراسة والعمل، ولكنه ينادي بوضع حدود وترشيد (with limits).",
+              distractors: {
+                a: "خطأ: الكاتب لم يرفض التكنولوجيا تماماً بل اعترف بضرورتها للواجبات.",
+                b: "خطأ: لا يؤيد استخدامها المطلق والمفتوح دون رقابة.",
+                d: "خطأ: هو لا يدافع عن التكنولوجيا بل ينبه لمخاطر الإفراط فيها."
+              }
+            }
+          },
+          {
+            q: "6. According to the passage, ........ of something isn't good for us.",
+            options: [
+              { key: "a", text: "little enough" },
+              { key: "b", text: "a bit little" },
+              { key: "c", text: "the majority" },
+              { key: "d", text: "too much" }
+            ],
+            correct: "d",
+            aiAnalysis: {
+              correct: "تكررت عبارة: 'too much technology can be bad' و 'too much digital use' في مواضع متعددة.",
+              distractors: {
+                a: "خطأ: القليل الكافي ليس ضاراً.",
+                b: "خطأ: المقدار القليل غير مقصود بالسياق التحذيري.",
+                c: "خطأ: التركيز على الإفراط والزيادة (too much)."
+              }
+            }
+          },
+          {
+            q: "7. Restricting the hours we spend with screens is hard at first for .....",
+            options: [
+              { key: "a", text: "fear of missing anything important" },
+              { key: "b", text: "getting addicted to it." },
+              { key: "c", text: "not having enough time to do everything" },
+              { key: "d", text: "preventing people from developing bad habits." }
+            ],
+            correct: "b",
+            aiAnalysis: {
+              correct: "صعوبة قطع أو تقليل الشاشات في البداية ترجع إلى التعود والإدمان الرقمي الشديد الذي تشكل كعادة سيئة متجذرة.",
+              distractors: {
+                a: "خطأ: لم تتحدث القطعة عن ظاهرة الخوف من فوات الأخبار (FOMO) بهذا التعبير.",
+                c: "خطأ: التقليل يوفر الوقت بدلاً من ضيقه.",
+                d: "خطأ: منع العادات السيئة هو النتيجة المرجوة وليس سبب الصعوبة."
+              }
+            }
+          },
+          {
+            q: "8. Which one summarizes the passage?",
+            options: [
+              { key: "a", text: "A digital diet stops us wasting out times online." },
+              { key: "b", text: "Parents must limit their children's use for digital device" },
+              { key: "c", text: "A digital diet develops creativity." },
+              { key: "d", text: "We shouldn't depend on technology all the time." }
+            ],
+            correct: "d",
+            aiAnalysis: {
+              correct: "الملخص الأعم والأشمل: عدم الاعتماد الكلي والدائم على التكنولوجيا وتحقيق التوازن الحياتي.",
+              distractors: {
+                a: "خطأ: إيقاف تضييع الوقت تفصيلة وليست الفكرة الجامعة لكل الجوانب الصحية والاجتماعية.",
+                b: "خطأ: القطعة موجهة للجميع وليس للآباء وأطفالهم فقط.",
+                c: "خطأ: تنمية الإبداع فائدة فرعية ذُكرت في فقرة واحدة فقط."
+              }
+            }
+          }
+        ]
+      }
+    ];
+
+    // State
+    let currentPassageIndex = 0;
+    let currentQuestionIndex = 0;
+    let userAnswers = {}; // { qIndex: { chosenKey, isCorrect } }
+    let score = 0;
+
+    // Elements
+    const passageSelect = document.getElementById("passageSelect");
+    const passageBadge = document.getElementById("passageBadge");
+    const passageText = document.getElementById("passageText");
+    const vocabContainer = document.getElementById("vocabContainer");
+    const currentQDisplay = document.getElementById("currentQDisplay");
+    const progressBar = document.getElementById("progressBar");
+    const scoreDisplay = document.getElementById("scoreDisplay");
+    const qText = document.getElementById("qText");
+    const optionsContainer = document.getElementById("optionsContainer");
+    const aiExplanation = document.getElementById("aiExplanation");
+    const explanationTitle = document.getElementById("explanationTitle");
+    const explanationBody = document.getElementById("explanationBody");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+
+    // Init Passages Dropdown
+    function initDropdown() {
+      passageSelect.innerHTML = passagesData.map((p, idx) => `
+        <option value="${idx}">القطعة ${p.id}: ${p.title.split(':')[1] || ''}</option>
+      `).join("");
+    }
+
+    // Load Passage
+    function loadPassage(idx) {
+      currentPassageIndex = idx;
+      currentQuestionIndex = 0;
+      userAnswers = {};
+      score = 0;
+      scoreDisplay.textContent = "0";
+
+      const p = passagesData[idx];
+      passageBadge.textContent = `القطعة ${p.id}`;
+      passageText.innerHTML = p.text.split('\n\n').map(par => `<p class="mb-3">${par}</p>`).join("");
+
+      // Render Vocab
+      vocabContainer.innerHTML = p.vocab.map(v => `
+        <div class="bg-indigo-50/60 p-2 rounded-lg border border-indigo-100 flex flex-col">
+          <span class="font-bold text-indigo-900 en-text text-xs">${v.en}</span>
+          <span class="text-slate-600 text-[11px] font-medium mt-0.5">${v.ar}</span>
+        </div>
+      `).join("");
+
+      loadQuestion(0);
+    }
+
+    function changePassage(val) {
+      loadPassage(parseInt(val));
+    }
+
+    // Load Question
+    function loadQuestion(qIdx) {
+      currentQuestionIndex = qIdx;
+      const p = passagesData[currentPassageIndex];
+      const qData = p.questions[qIdx];
+
+      // Update progress
+      currentQDisplay.textContent = `${qIdx + 1} من ${p.questions.length}`;
+      const progressPercent = ((qIdx + 1) / p.questions.length) * 100;
+      progressBar.style.width = `${progressPercent}%`;
+
+      // Set Text
+      qText.textContent = qData.q;
+
+      // Check if already answered
+      const answeredState = userAnswers[qIdx];
+
+      // Render Options
+      optionsContainer.innerHTML = qData.options.map(opt => {
+        let btnClasses = "w-full text-left p-3.5 rounded-xl border border-slate-200 text-sm font-medium transition duration-150 flex items-center justify-between";
+        
+        if (!answeredState) {
+          btnClasses += " hover:bg-indigo-50/70 hover:border-indigo-300 active:scale-[0.99] bg-white";
+        } else {
+          // Already answered
+          if (opt.key === qData.correct) {
+            btnClasses += " bg-emerald-50 border-emerald-500 text-emerald-900 font-bold";
+          } else if (opt.key === answeredState.chosenKey) {
+            btnClasses += " bg-rose-50 border-rose-400 text-rose-900 font-bold";
+          } else {
+            btnClasses += " bg-slate-50 border-slate-200 text-slate-400 opacity-60";
+          }
+        }
+
+        const disabledAttr = answeredState ? "disabled" : "";
+
+        return `
+          <button onclick="handleSelectOption('${opt.key}')" ${disabledAttr} class="${btnClasses}">
+            <div class="flex items-center gap-3">
+              <span class="w-6 h-6 rounded-full border border-slate-300 flex items-center justify-center text-xs font-bold text-slate-500 ${answeredState && opt.key === qData.correct ? 'border-emerald-500 text-emerald-600 bg-emerald-100' : ''}">
+                ${opt.key.toUpperCase()}
+              </span>
+              <span>${opt.text}</span>
+            </div>
+            ${answeredState && opt.key === qData.correct ? '<span class="text-emerald-600 font-bold text-xs">✓ صحيح</span>' : ''}
+            ${answeredState && opt.key === answeredState.chosenKey && !answeredState.isCorrect ? '<span class="text-rose-500 font-bold text-xs">✕ اختيارك</span>' : ''}
+          </button>
+        `;
+      }).join("");
+
+      // Render AI Explanation if answered
+      if (answeredState) {
+        showExplanation(qData, answeredState);
+      } else {
+        aiExplanation.classList.add("hidden");
+      }
+
+      // Manage Nav Buttons
+      prevBtn.disabled = qIdx === 0;
+      nextBtn.textContent = qIdx === p.questions.length - 1 ? "إنهاء القطعة" : "التالي";
+    }
+
+    // Handle Option Selection
+    function handleSelectOption(chosenKey) {
+      const p = passagesData[currentPassageIndex];
+      const qData = p.questions[currentQuestionIndex];
+      const isCorrect = chosenKey === qData.correct;
+
+      if (isCorrect) {
+        score++;
+        scoreDisplay.textContent = score;
+      }
+
+      userAnswers[currentQuestionIndex] = {
+        chosenKey,
+        isCorrect
+      };
+
+      // Reload view with answers highlighted
+      loadQuestion(currentQuestionIndex);
+    }
+
+    // Display AI Reasoning & Distractor Analysis
+    function showExplanation(qData, answerState) {
+      aiExplanation.classList.remove("hidden");
+
+      if (answerState.isCorrect) {
+        aiExplanation.className = "mt-5 p-4 rounded-xl border border-emerald-200 bg-emerald-50/50";
+        explanationTitle.className = "text-sm font-bold text-emerald-800";
+        explanationTitle.innerHTML = "✨ إجابة صحيحة وموفقة! تحليل الذكاء الاصطناعي:";
+      } else {
+        aiExplanation.className = "mt-5 p-4 rounded-xl border border-amber-200 bg-amber-50/50";
+        explanationTitle.className = "text-sm font-bold text-amber-900";
+        explanationTitle.innerHTML = "⚠️ إجابة غير دقيقة! إليك التفنيد والتحليل الذكي:";
+      }
+
+      let distractorsHtml = "";
+      for (const [key, reason] of Object.entries(qData.aiAnalysis.distractors)) {
+        const isUserMistake = (key === answerState.chosenKey);
+        distractorsHtml += `
+          <div class="p-2 rounded-lg text-[11px] ${isUserMistake ? 'bg-rose-100/70 border border-rose-300 font-semibold text-rose-900' : 'bg-white/80 text-slate-600 border border-slate-200'}">
+            <span class="font-bold uppercase tracking-wide">الخيار (${key}):</span> ${reason}
+            ${isUserMistake ? ' <span class="text-rose-600 font-bold underline">(هذا هو الخيار الذي حددته)</span>' : ''}
+          </div>
+        `;
+      }
+
+      explanationBody.innerHTML = `
+        <div class="p-2.5 rounded-lg bg-white border border-slate-200">
+          <p class="text-emerald-800 font-bold mb-1 text-xs">💡 لماذا الاختيار (${qData.correct.toUpperCase()}) هو الصحيح دقيقاً؟</p>
+          <p class="text-slate-700 text-xs">${qData.aiAnalysis.correct}</p>
+        </div>
+        <div class="mt-2 space-y-1.5">
+          <p class="font-bold text-slate-700 text-xs">تحليل الخيارات الخاطئة ولماذا استبعدناها:</p>
+          ${distractorsHtml}
+        </div>
+      `;
+    }
+
+    function prevQuestion() {
+      if (currentQuestionIndex > 0) {
+        loadQuestion(currentQuestionIndex - 1);
+      }
+    }
+
+    function nextQuestion() {
+      const p = passagesData[currentPassageIndex];
+      if (currentQuestionIndex < p.questions.length - 1) {
+        loadQuestion(currentQuestionIndex + 1);
+      } else {
+        alert(`أحسنت! لقد أكملت حل القطعة.\nدرجتك النهائية: ${score} من أصل ${p.questions.length}`);
+      }
+    }
+
+    // Startup
+    window.addEventListener('DOMContentLoaded', () => {
+      initDropdown();
+      loadPassage(0);
+    });
+  </script>
+</body>
+</html>
+```eof
+
+### ميزات هذا التطبيق لأختك:
+1. **تصميم تفاعلي بالكامل على الهاتف والكمبيوتر**: واجهة مقسمة لعرض القطعة الأصلية في شق والأسئلة في شق آخر مع شريط تقدم وحساب النتيجة فوراً.
+2. **قاموس الكلمات الصعبة (Helping Vocabulary)**: موجود أسفل كل قطعة لتسهيل المراجعة وحفظ معاني الكلمات المفتاحية في منهج الثانوية العامة.
+3. **تحليل ذكي فوري (AI Analysis)**:
+   - بمجرد الضغط على أي إجابة، يظهر كادر التحليل.
+   - يوضح **لماذا الإجابة الصحيحة صحيحة** وفقاً للنص.
+   - يوضح **لماذا كل اختيار من الاختيارات الخاطئة الأخرى تم استبعاده**، مع تمييز خاص للإجابة التي اختارتها باللون الأحمر لتعرف سبب الخطأ بدقة.
+4. **ملف واحد جاهز للتشغيل**: يمكنك حفظ الملف بصيغة `.html` وفتحه على متصفح كروم أو سفاري على الهاتف أو إرساله لها على الواتساب لفتحه مباشرة بلمسة واحدة دون الحاجة لأي برامج إضافية!
+٥.
